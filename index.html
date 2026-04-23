@@ -136,68 +136,205 @@
   }
   .rh-quad{width:50%;height:50%}
 
-  /* ---------- BARRA (toque 2) ---------- */
-  #screen-barra{justify-content:center}
+  /* ---------- PREDICCIÓN (pantalla inicial, teatro) ---------- */
+  #screen-prediccion{
+    justify-content:flex-start;
+    padding:calc(env(safe-area-inset-top) + 22px) 18px calc(env(safe-area-inset-bottom) + 22px);
+    overflow-y:auto;
+  }
+  .pred-head{
+    width:100%;
+    text-align:center;
+    margin-bottom:14px;
+  }
+  .pred-kicker{
+    font-family:'Inter',sans-serif;
+    font-size:10px;letter-spacing:.35em;text-transform:uppercase;
+    color:var(--dorado);opacity:.7;
+  }
+  .pred-h2{
+    display:inline-block;
+    font-family:'Playfair Display',serif;font-weight:700;
+    font-size:clamp(28px,8vw,38px);
+    line-height:1;
+    margin:8px 0 4px;
+    background:linear-gradient(110deg,#8a6f1e 0%,var(--dorado) 40%,#fff3c4 50%,var(--dorado) 60%,#8a6f1e 100%);
+    background-size:220% 100%;
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:transparent;
+    animation:shimmer 4.2s linear infinite;
+  }
+  .pred-sub{
+    font-family:'Playfair Display',serif;font-style:italic;
+    font-size:13px;color:var(--crema);opacity:.7;
+    padding:0 12px;
+  }
+  .pred-grid{
+    width:100%;
+    display:flex;flex-direction:column;gap:10px;
+    transition:opacity .5s ease,filter .5s ease;
+  }
+  .pred-grid.sealing{opacity:0;filter:blur(8px);pointer-events:none}
+  .pred-suit{display:flex;flex-direction:column;gap:4px}
+  .pred-suit-h{
+    font-family:'Playfair Display',serif;
+    font-size:13px;color:var(--dorado);opacity:.85;
+    padding-left:2px;letter-spacing:.08em;
+  }
+  .pred-suit.red .pred-suit-h{color:#d66a6a}
+  .pred-row{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:4px;
+  }
+  .pred-card{
+    aspect-ratio:3/4;
+    background:linear-gradient(180deg,#fdfaf0 0%,#f2e7c8 100%);
+    color:var(--negro-carta);
+    border:1px solid rgba(212,175,55,.35);
+    border-radius:5px;
+    font-family:'Playfair Display',serif;font-weight:700;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    gap:1px;line-height:1;
+    cursor:pointer;
+    transition:transform .2s ease,box-shadow .2s ease;
+    padding:0;
+  }
+  .pred-card.red{color:var(--rojo-carta)}
+  .pred-card.picked{
+    transform:scale(1.35);
+    box-shadow:0 0 26px rgba(212,175,55,.75),0 10px 18px rgba(0,0,0,.55);
+    border-color:var(--dorado);
+    z-index:5;
+  }
+  .pc-r{font-size:15px}
+  .pc-s{font-size:11px;opacity:.8}
+
+  .pred-sello{
+    position:absolute;inset:0;z-index:30;
+    display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at center,rgba(10,46,31,.96) 0%,rgba(5,26,17,1) 75%);
+    animation:fadeInSello .6s ease both;
+  }
+  .pred-sello[hidden]{display:none}
+  @keyframes fadeInSello{from{opacity:0}to{opacity:1}}
+  .sello-inner{
+    position:relative;text-align:center;
+    padding:24px;
+  }
+  .sello-orbs{
+    position:absolute;inset:-20px;pointer-events:none;
+  }
+  .sello-orbs .orbita{
+    position:absolute;inset:0;
+    border:1px solid rgba(212,175,55,.18);
+    border-radius:50%;
+    animation:orbitaRot 9s linear infinite;
+  }
+  .sello-orbs .orbita.b{
+    inset:24px;
+    border-color:rgba(212,175,55,.28);
+    animation:orbitaRot 6s linear infinite reverse;
+  }
+  .sello-mark{
+    font-family:'Playfair Display',serif;
+    font-size:74px;color:var(--dorado);
+    text-shadow:0 0 28px rgba(212,175,55,.6);
+    animation:pulseSigilo 2.2s ease-in-out infinite;
+    margin-bottom:14px;
+  }
+  .sello-texto{
+    font-family:'Playfair Display',serif;
+    font-size:18px;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--dorado);line-height:1.3;
+    margin-bottom:28px;
+  }
+  .btn-continuar{
+    font-family:'Inter',sans-serif;
+    font-size:11px;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--crema);
+    background:transparent;
+    border:1px solid rgba(212,175,55,.5);
+    border-radius:50px;
+    padding:14px 30px;
+    cursor:pointer;
+  }
+
+  /* ---------- VALOR (toque 2, cuadrícula 4×4 invisible) ---------- */
+  #screen-barra{
+    justify-content:space-between;
+    padding:calc(env(safe-area-inset-top) + 48px) 24px calc(env(safe-area-inset-bottom) + 28px);
+  }
+  .barra-head{text-align:center}
   .barra-titulo{
     font-family:'Playfair Display',serif;
     color:var(--dorado);
     font-size:18px;
     letter-spacing:.25em;
     text-transform:uppercase;
-    margin-bottom:32px;
     opacity:.85;
   }
   .barra-sub{
+    margin-top:10px;
     font-family:'Playfair Display',serif;
     font-style:italic;
     color:var(--crema);
-    opacity:.6;
+    opacity:.55;
     font-size:14px;
-    margin-bottom:40px;
   }
-  .progreso{
+  .barra-sigilo-wrap{
     position:relative;
-    width:min(78vw,420px);
-    height:10px;
-    border:1px solid rgba(212,175,55,.55);
-    border-radius:6px;
-    overflow:hidden;
-    background:rgba(0,0,0,.25);
+    width:96px;height:96px;
+    display:flex;align-items:center;justify-content:center;
+    opacity:.7;
   }
-  .progreso::after{
-    content:"";position:absolute;inset:0;
-    background:linear-gradient(90deg,
-      rgba(212,175,55,0) 0%,
-      rgba(212,175,55,.9) 50%,
-      rgba(212,175,55,0) 100%);
-    transform:translateX(-100%);
-    animation:barraLoop 2.4s linear infinite;
+  .barra-sigilo-wrap .orbita{
+    position:absolute;inset:0;
+    border:1px solid rgba(212,175,55,.18);
+    border-radius:50%;
+    animation:orbitaRot 7s linear infinite;
   }
-  @keyframes barraLoop{
-    0%{transform:translateX(-100%)}
-    100%{transform:translateX(100%)}
+  .barra-sigilo-wrap .orbita.b{
+    inset:18px;
+    animation:orbitaRot 5s linear infinite reverse;
+    border-color:rgba(212,175,55,.28);
+  }
+  .sigilo-sm{
+    font-family:'Playfair Display',serif;
+    font-size:30px;color:var(--dorado);
+    text-shadow:0 0 12px rgba(212,175,55,.4);
+    animation:pulseSigilo 2.6s ease-in-out infinite;
   }
   .barra-hint{
-    margin-top:22px;
     font-size:11px;letter-spacing:.3em;
     text-transform:uppercase;
     color:var(--crema);
-    opacity:.4;
+    opacity:.35;
+    text-align:center;
   }
-  /* ensayo: 13 zonas sobre la barra (solo visibles en rehearsal) */
-  .rh-barra{
+
+  /* Overlays de zonas en la pantalla VALOR: position:fixed para que sus %
+     coincidan con el viewport (igual que clientX/innerWidth en computeRank).
+     Quedan ocultos fuera de screen-barra porque heredan display:none del padre. */
+  #aim-barra{position:fixed;inset:0;pointer-events:none;z-index:5}
+  #rh-barra{
+    position:fixed;inset:0;
+    display:none;pointer-events:none;z-index:6;
+  }
+  body.rehearsal #rh-barra{display:block}
+  #rh-barra .rh-slot{
     position:absolute;
-    left:50%;top:50%;transform:translate(-50%,-50%);
-    width:min(78vw,420px);height:64px;
-    display:none;
-  }
-  body.rehearsal .rh-barra{display:flex}
-  .rh-barra .rh-slot{
-    flex:1;
     outline:1px dashed rgba(212,175,55,.55);
+    background:rgba(212,175,55,.05);
     display:flex;align-items:center;justify-content:center;
-    font-size:11px;color:var(--dorado);
-    background:rgba(212,175,55,.04);
+    font-family:'Inter',sans-serif;
+    font-size:13px;font-weight:500;
+    color:var(--dorado);
+  }
+  #rh-barra .rh-king{
+    background:rgba(212,175,55,.09);
+    font-size:15px;
   }
 
   /* ---------- MEDITACIÓN ---------- */
@@ -362,8 +499,26 @@
 <body>
 <main>
 
-  <!-- =================== INICIO =================== -->
-  <section id="screen-inicio" class="screen active">
+  <!-- =================== PREDICCIÓN (teatro, 1ª pantalla) =================== -->
+  <section id="screen-prediccion" class="screen active">
+    <div class="pred-head">
+      <div class="pred-kicker">· paso 1 · tu predicción ·</div>
+      <h2 class="pred-h2">Sella una carta</h2>
+      <div class="pred-sub">Elige mentalmente una y tócala. El oráculo la guardará hasta el final.</div>
+    </div>
+    <div class="pred-grid" id="pred-grid"></div>
+    <div class="pred-sello" id="pred-sello" hidden>
+      <div class="sello-inner">
+        <div class="sello-orbs"><div class="orbita"></div><div class="orbita b"></div></div>
+        <div class="sello-mark">✦</div>
+        <div class="sello-texto">Predicción<br>sellada</div>
+        <button class="btn-continuar" id="btn-continuar">Continuar →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== INICIO (palo) =================== -->
+  <section id="screen-inicio" class="screen">
     <div class="ornamento-top">· A R C A N A ·</div>
     <div class="titulo-wrap">
       <h1 id="titulo">El Oráculo</h1>
@@ -393,18 +548,24 @@
     <div class="touch-layer" id="touch-inicio"></div>
   </section>
 
-  <!-- =================== BARRA =================== -->
+  <!-- =================== VALOR (toque 2) =================== -->
   <section id="screen-barra" class="screen">
-    <div class="barra-titulo">Canalizando</div>
-    <div class="barra-sub">las energías del naipe</div>
-    <div class="progreso"></div>
+    <div class="barra-head">
+      <div class="barra-titulo">Canalizando</div>
+      <div class="barra-sub">las energías del naipe</div>
+    </div>
+    <div class="barra-sigilo-wrap">
+      <div class="orbita"></div>
+      <div class="orbita b"></div>
+      <div class="sigilo-sm">✦</div>
+    </div>
     <div class="barra-hint">deslizar arriba → abajo para cancelar</div>
 
-    <!-- Guías de aim en los 13 centros de la barra -->
+    <!-- Guías de aim invisibles (16 puntos: 12 ranks + K repetido en bottom row) -->
     <div id="aim-barra"></div>
 
-    <!-- Overlay ensayo (13 zonas) -->
-    <div class="rh-barra" id="rh-barra"></div>
+    <!-- Overlay ensayo (cuadrícula 4×4) -->
+    <div id="rh-barra"></div>
 
     <div class="touch-layer" id="touch-barra"></div>
   </section>
@@ -448,24 +609,37 @@
   //   x < width/2, y ≥ height/2  → 2 = ♦ diamantes (abajo-izq)
   //   x ≥ width/2, y ≥ height/2  → 3 = ♣ tréboles  (abajo-der)
   //
-  // ─── MAPEO DE VALORES (Toque 2, pantalla BARRA) ─────────────
-  // La barra ocupa todo el ancho del viewport. Se divide en 13 zonas
-  // iguales horizontalmente:
-  //   zona n (0..12) ⇔ rank n ⇔ A,2,3,4,5,6,7,8,9,10,J,Q,K
-  //   rank = clamp(0..12, floor(touchX / (width/13)))
+  // ─── MAPEO DE VALORES (Toque 2, pantalla VALOR) ─────────────
+  // Cuadrícula 4×4 invisible en la zona central de la pantalla.
+  // Bandas (en % del viewport) — ajusta aquí si cambias el layout:
+  //   Columnas (x): [11-29] [31-49] [51-69] [71-89]        (2% de dead gap entre columnas)
+  //   Filas (y):    [30-42] [44-56] [58-70] [72-90 K-ancho] (idem, fila K muy generosa)
+  //   Filas/cols fuera de las bandas → tap descartado (sin input).
+  // Distribución de rangos en la cuadrícula:
+  //      col0 col1 col2 col3
+  //   r0 [ A ][ 2 ][ 3 ][ 4 ]
+  //   r1 [ 5 ][ 6 ][ 7 ][ 8 ]
+  //   r2 [ 9 ][10 ][ J ][ Q ]
+  //   r3 [ K ][ K ][ K ][ K ]   ← toda la fila inferior = K (máxima tolerancia)
+  // Cancelar palo: swipe-down desde la franja superior (y < 20%).
   //
-  // Si cambias el convenio, modifica SUIT_MAP / RANK_NAMES aquí abajo.
+  // Si cambias el convenio, modifica SUIT_MAP / RANK_NAMES y GRID_* aquí abajo.
   const SUIT_MAP    = ['♠','♥','♦','♣'];
   const SUIT_NAMES  = ['picas','corazones','diamantes','tréboles'];
   const SUIT_IS_RED = [false, true, true, false];
   const RANK_NAMES  = ['As','Dos','Tres','Cuatro','Cinco','Seis','Siete','Ocho','Nueve','Diez','Jota','Reina','Rey'];
   const RANK_SHORT  = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-  // Género gramatical del palo para "X de Y" (todos femeninos en esta convención,
-  // así que no hace falta variar artículos).
 
-  const state = { screen:'inicio', suit:null, rank:null, rehearsal:false };
+  // Bandas activas de la cuadrícula de VALOR (en %). Fuera de estas → dead zone.
+  const GRID_COLS = [[11,29],[31,49],[51,69],[71,89]];
+  const GRID_ROWS = [[30,42],[44,56],[58,70]];   // filas de rank 0..11 (A..Q)
+  const GRID_K    = { x:[10,90], y:[72,90] };    // K: fila inferior ancha
+  const RANK_GRID = [ [0,1,2,3], [4,5,6,7], [8,9,10,11] ];
+
+  const state = { screen:'prediccion', suit:null, rank:null, rehearsal:false };
 
   const screens = {
+    prediccion:  document.getElementById('screen-prediccion'),
     inicio:      document.getElementById('screen-inicio'),
     barra:       document.getElementById('screen-barra'),
     meditacion:  document.getElementById('screen-meditacion'),
@@ -479,6 +653,55 @@
 
   function vibrar(pat){
     if (navigator.vibrate) { try { navigator.vibrate(pat); } catch(_){} }
+  }
+
+  /* ---------- PREDICCIÓN: rejilla teatral, la carta no se usa ---------- */
+  const predGridHost = document.getElementById('pred-grid');
+  const predSello    = document.getElementById('pred-sello');
+
+  (function buildPredGrid(){
+    for (let s=0; s<4; s++){
+      const block = document.createElement('div');
+      block.className = 'pred-suit' + (SUIT_IS_RED[s] ? ' red' : '');
+      const h = document.createElement('div');
+      h.className = 'pred-suit-h';
+      h.innerHTML = `<span>${SUIT_MAP[s]}</span>&nbsp;&nbsp;${SUIT_NAMES[s]}`;
+      block.appendChild(h);
+      const row = document.createElement('div');
+      row.className = 'pred-row';
+      for (let r=0; r<13; r++){
+        const c = document.createElement('button');
+        c.type = 'button';
+        c.className = 'pred-card' + (SUIT_IS_RED[s] ? ' red' : '');
+        c.innerHTML = `<span class="pc-r">${RANK_SHORT[r]}</span><span class="pc-s">${SUIT_MAP[s]}</span>`;
+        c.addEventListener('click', onPredPick);
+        row.appendChild(c);
+      }
+      block.appendChild(row);
+      predGridHost.appendChild(block);
+    }
+  })();
+
+  function onPredPick(e){
+    if (state.screen !== 'prediccion') return;
+    const card = e.currentTarget;
+    card.classList.add('picked');
+    vibrar(20);
+    // pequeña pausa para mostrar el highlight, luego sellamos
+    setTimeout(() => {
+      predGridHost.classList.add('sealing');
+      setTimeout(() => { predSello.hidden = false; }, 500);
+    }, 450);
+  }
+
+  document.getElementById('btn-continuar').addEventListener('click', () => {
+    show('inicio');
+  });
+
+  function resetPrediccion(){
+    predSello.hidden = true;
+    predGridHost.classList.remove('sealing');
+    predGridHost.querySelectorAll('.pred-card.picked').forEach(c => c.classList.remove('picked'));
   }
 
   /* ---------- INICIO: toque de palo + long-press título ---------- */
@@ -530,26 +753,68 @@
   touchInicio.addEventListener('pointercancel', cancelarLongPress);
   touchInicio.addEventListener('pointerleave', cancelarLongPress);
 
-  /* ---------- BARRA: swipe-down (cancelar) + tap de rango ---------- */
+  /* ---------- VALOR: swipe-down (cancelar) + tap en cuadrícula 4×4 ---------- */
   const touchBarra = document.getElementById('touch-barra');
 
-  // Construir guías de aim de la barra y el overlay de ensayo una sola vez
+  // Construir guías de aim (centros de cada celda) y overlay de ensayo (cuadrícula)
   (function buildBarra(){
     const aimHost = document.getElementById('aim-barra');
     const rh = document.getElementById('rh-barra');
-    for (let i=0;i<13;i++){
-      const a = document.createElement('div');
-      a.className = 'aim';
-      a.style.left = ((i+0.5)*(100/13)) + '%';
-      a.style.top = '50%';
-      aimHost.appendChild(a);
 
-      const s = document.createElement('div');
-      s.className = 'rh-slot';
-      s.textContent = RANK_SHORT[i];
-      rh.appendChild(s);
+    // 12 aims para A..Q (centro de cada celda)
+    for (let r=0; r<3; r++){
+      for (let c=0; c<4; c++){
+        const cx = (GRID_COLS[c][0] + GRID_COLS[c][1]) / 2;
+        const cy = (GRID_ROWS[r][0] + GRID_ROWS[r][1]) / 2;
+        const a = document.createElement('div');
+        a.className = 'aim';
+        a.style.left = cx + '%';
+        a.style.top  = cy + '%';
+        aimHost.appendChild(a);
+
+        const s = document.createElement('div');
+        s.className = 'rh-slot';
+        s.style.left   = GRID_COLS[c][0] + '%';
+        s.style.top    = GRID_ROWS[r][0] + '%';
+        s.style.width  = (GRID_COLS[c][1] - GRID_COLS[c][0]) + '%';
+        s.style.height = (GRID_ROWS[r][1] - GRID_ROWS[r][0]) + '%';
+        s.textContent  = RANK_SHORT[ RANK_GRID[r][c] ];
+        rh.appendChild(s);
+      }
     }
+
+    // 1 aim para K (centro de su zona ancha)
+    const kAim = document.createElement('div');
+    kAim.className = 'aim';
+    kAim.style.left = ((GRID_K.x[0] + GRID_K.x[1]) / 2) + '%';
+    kAim.style.top  = ((GRID_K.y[0] + GRID_K.y[1]) / 2) + '%';
+    aimHost.appendChild(kAim);
+
+    // Celda visible de K en modo ensayo (ocupa toda la franja inferior)
+    const kSlot = document.createElement('div');
+    kSlot.className = 'rh-slot rh-king';
+    kSlot.style.left   = GRID_K.x[0] + '%';
+    kSlot.style.top    = GRID_K.y[0] + '%';
+    kSlot.style.width  = (GRID_K.x[1] - GRID_K.x[0]) + '%';
+    kSlot.style.height = (GRID_K.y[1] - GRID_K.y[0]) + '%';
+    kSlot.textContent  = 'K';
+    rh.appendChild(kSlot);
   })();
+
+  function computeRank(x, y){
+    const w = window.innerWidth, h = window.innerHeight;
+    const xp = (x / w) * 100;
+    const yp = (y / h) * 100;
+    // K: fila inferior con tolerancia amplia
+    if (xp >= GRID_K.x[0] && xp <= GRID_K.x[1] &&
+        yp >= GRID_K.y[0] && yp <= GRID_K.y[1]) return 12;
+    // A..Q: buscar celda en cuadrícula 3×4 con dead gaps
+    let col = -1, row = -1;
+    for (let c=0; c<4; c++) if (xp >= GRID_COLS[c][0] && xp <= GRID_COLS[c][1]) { col = c; break; }
+    for (let r=0; r<3; r++) if (yp >= GRID_ROWS[r][0] && yp <= GRID_ROWS[r][1]) { row = r; break; }
+    if (col < 0 || row < 0) return null;  // en dead gap o fuera de la cuadrícula
+    return RANK_GRID[row][col];
+  }
 
   let downY = null, downX = null, cancelIntent = false;
   touchBarra.addEventListener('pointerdown', (e) => {
@@ -573,9 +838,8 @@
     downY = null; cancelIntent = false;
     if (startedAtTop) return; // no contar taps iniciados en la franja de cancelar
 
-    const w = window.innerWidth;
-    const x = Math.max(0, Math.min(w-1, e.clientX));
-    const rank = Math.min(12, Math.floor(x / (w/13)));
+    const rank = computeRank(e.clientX, e.clientY);
+    if (rank === null) return; // tap en dead gap → ignorar (sin vibración, queda esperando)
     state.rank = rank;
     vibrar(30);
     lanzarMeditacion();
@@ -652,7 +916,8 @@
     nombreEl.textContent = '';
     caretEl.style.display = 'inline-block';
     if (typingTimer){ clearInterval(typingTimer); typingTimer = null; }
-    show('inicio');
+    resetPrediccion();
+    show('prediccion');
   });
 
   /* ---------- Service worker ---------- */
