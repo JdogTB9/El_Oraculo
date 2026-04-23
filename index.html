@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0a2e1f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="El Oráculo">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500&display=swap">
+<title>El Oráculo</title>
+<style>
+  :root{
+    --verde:#0a2e1f;
+    --verde-claro:#113d2a;
+    --dorado:#d4af37;
+    --dorado-soft:#b9962c;
+    --crema:#ece4cc;
+    --rojo-carta:#b71e2a;
+    --negro-carta:#141414;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:
+      radial-gradient(ellipse at top,#14412d 0%,var(--verde) 60%,#051a11 100%);
+    color:var(--crema);
+    user-select:none;-webkit-user-select:none;
+    touch-action:manipulation;
+  }
+  main{
+    position:fixed;inset:0;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  /* ---------- Pantallas ---------- */
+  .screen{
+    position:absolute;inset:0;
+    display:none;
+    flex-direction:column;
+    align-items:center;justify-content:center;
+    padding:24px;
+  }
+  .screen.active{display:flex}
+
+  /* ---------- INICIO ---------- */
+  #screen-inicio{
+    justify-content:space-between;
+    padding:calc(env(safe-area-inset-top) + 48px) 24px calc(env(safe-area-inset-bottom) + 48px);
+  }
+  .ornamento-top{
+    font-family:'Playfair Display',serif;
+    color:var(--dorado);
+    letter-spacing:.4em;
+    font-size:14px;
+    opacity:.7;
+  }
+  .titulo-wrap{
+    text-align:center;
+    position:relative;
+    padding:8px 24px;
+  }
+  #titulo{
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-size:clamp(48px,12vw,80px);
+    line-height:1;
+    letter-spacing:.02em;
+    background:linear-gradient(
+      110deg,
+      #8a6f1e 0%,
+      var(--dorado) 40%,
+      #fff3c4 50%,
+      var(--dorado) 60%,
+      #8a6f1e 100%
+    );
+    background-size:220% 100%;
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:transparent;
+    animation:shimmer 3.8s linear infinite;
+    display:inline-block;
+  }
+  @keyframes shimmer{
+    0%{background-position:120% 0}
+    100%{background-position:-120% 0}
+  }
+  .subtitulo{
+    margin-top:14px;
+    font-family:'Playfair Display',serif;
+    font-style:italic;
+    font-size:15px;
+    color:var(--crema);
+    opacity:.75;
+    letter-spacing:.05em;
+  }
+  .palos{
+    display:flex;gap:26px;
+    color:var(--dorado);
+    font-size:22px;
+    opacity:.55;
+  }
+  .palos .r{color:#c96b6b}
+  .hint{
+    font-size:11px;letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--crema);
+    opacity:.35;
+  }
+
+  /* Guías de aim: puntitos casi invisibles (alpha 0.04) */
+  .aim{
+    position:absolute;
+    width:4px;height:4px;
+    background:rgba(0,0,0,0.04);
+    border-radius:50%;
+    pointer-events:none;
+    transform:translate(-50%,-50%);
+  }
+
+  /* Overlay de MODO ENSAYO: solo visible con body.rehearsal */
+  .rehearsal-overlay{display:none;position:absolute;inset:0;pointer-events:none}
+  body.rehearsal .rehearsal-overlay{display:block}
+  .rh-zone{
+    position:absolute;
+    outline:1px dashed rgba(212,175,55,.55);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Inter',sans-serif;font-size:13px;
+    color:var(--dorado);
+    background:rgba(212,175,55,.04);
+  }
+  .rh-quad{width:50%;height:50%}
+
+  /* ---------- BARRA (toque 2) ---------- */
+  #screen-barra{justify-content:center}
+  .barra-titulo{
+    font-family:'Playfair Display',serif;
+    color:var(--dorado);
+    font-size:18px;
+    letter-spacing:.25em;
+    text-transform:uppercase;
+    margin-bottom:32px;
+    opacity:.85;
+  }
+  .barra-sub{
+    font-family:'Playfair Display',serif;
+    font-style:italic;
+    color:var(--crema);
+    opacity:.6;
+    font-size:14px;
+    margin-bottom:40px;
+  }
+  .progreso{
+    position:relative;
+    width:min(78vw,420px);
+    height:10px;
+    border:1px solid rgba(212,175,55,.55);
+    border-radius:6px;
+    overflow:hidden;
+    background:rgba(0,0,0,.25);
+  }
+  .progreso::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg,
+      rgba(212,175,55,0) 0%,
+      rgba(212,175,55,.9) 50%,
+      rgba(212,175,55,0) 100%);
+    transform:translateX(-100%);
+    animation:barraLoop 2.4s linear infinite;
+  }
+  @keyframes barraLoop{
+    0%{transform:translateX(-100%)}
+    100%{transform:translateX(100%)}
+  }
+  .barra-hint{
+    margin-top:22px;
+    font-size:11px;letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--crema);
+    opacity:.4;
+  }
+  /* ensayo: 13 zonas sobre la barra (solo visibles en rehearsal) */
+  .rh-barra{
+    position:absolute;
+    left:50%;top:50%;transform:translate(-50%,-50%);
+    width:min(78vw,420px);height:64px;
+    display:none;
+  }
+  body.rehearsal .rh-barra{display:flex}
+  .rh-barra .rh-slot{
+    flex:1;
+    outline:1px dashed rgba(212,175,55,.55);
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;color:var(--dorado);
+    background:rgba(212,175,55,.04);
+  }
+
+  /* ---------- MEDITACIÓN ---------- */
+  #screen-meditacion{justify-content:center}
+  .med-wrap{
+    position:relative;
+    width:240px;height:240px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .orbita{
+    position:absolute;inset:0;
+    border:1px solid rgba(212,175,55,.18);
+    border-radius:50%;
+    animation:orbitaRot 6s linear infinite;
+  }
+  .orbita.b{inset:24px;animation-duration:9s;animation-direction:reverse;border-color:rgba(212,175,55,.12)}
+  .orbita.c{inset:48px;animation-duration:4.5s;border-color:rgba(212,175,55,.22)}
+  @keyframes orbitaRot{to{transform:rotate(360deg)}}
+  .particulas{position:absolute;inset:0;pointer-events:none}
+  .particula{
+    position:absolute;left:50%;top:50%;
+    width:6px;height:6px;margin:-3px 0 0 -3px;
+    border-radius:50%;
+    background:radial-gradient(circle,#fff3c4 0%,var(--dorado) 45%,transparent 70%);
+    box-shadow:0 0 8px var(--dorado);
+    animation:flota 2.5s ease-in-out infinite;
+  }
+  @keyframes flota{
+    0%,100%{opacity:0;transform:translate(0,0) scale(.6)}
+    50%{opacity:1}
+  }
+  .sigilo{
+    font-family:'Playfair Display',serif;
+    font-size:44px;color:var(--dorado);
+    text-shadow:0 0 24px rgba(212,175,55,.5);
+    animation:pulseSigilo 2.5s ease-in-out infinite;
+  }
+  @keyframes pulseSigilo{
+    0%,100%{opacity:.55;transform:scale(.95)}
+    50%{opacity:1;transform:scale(1.05)}
+  }
+  .med-texto{
+    margin-top:38px;
+    font-family:'Playfair Display',serif;
+    font-style:italic;
+    color:var(--crema);
+    opacity:.75;
+    letter-spacing:.05em;
+    font-size:16px;
+    text-align:center;
+  }
+
+  /* ---------- REVELACIÓN ---------- */
+  #screen-revelacion{justify-content:space-between;padding:calc(env(safe-area-inset-top) + 40px) 24px calc(env(safe-area-inset-bottom) + 40px)}
+  .rev-top{
+    font-family:'Playfair Display',serif;
+    color:var(--dorado);
+    letter-spacing:.35em;
+    font-size:12px;text-transform:uppercase;
+    opacity:.7;
+  }
+  .carta-escena{
+    perspective:1400px;
+    width:min(62vw,260px);
+    aspect-ratio:5/7;
+  }
+  .carta{
+    position:relative;width:100%;height:100%;
+    transform-style:preserve-3d;
+    transform:rotateY(0deg);
+    transition:transform .95s cubic-bezier(.2,.8,.2,1);
+    animation:flotar 4s ease-in-out infinite;
+  }
+  #screen-revelacion.active .carta{transform:rotateY(180deg)}
+  @keyframes flotar{
+    0%,100%{translate:0 0}
+    50%{translate:0 -6px}
+  }
+  .cara{
+    position:absolute;inset:0;
+    border-radius:16px;
+    backface-visibility:hidden;-webkit-backface-visibility:hidden;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.7),0 0 0 1px rgba(212,175,55,.25) inset;
+    overflow:hidden;
+  }
+  .dorso{
+    background:
+      repeating-linear-gradient(45deg,#1a1a1a 0 8px,#0e0e0e 8px 16px),
+      var(--negro-carta);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .dorso::before{
+    content:"";position:absolute;inset:10px;
+    border:2px solid var(--dorado);
+    border-radius:10px;
+    opacity:.7;
+  }
+  .dorso::after{
+    content:"✦";
+    font-family:'Playfair Display',serif;
+    color:var(--dorado);font-size:72px;
+    text-shadow:0 0 14px rgba(212,175,55,.6);
+  }
+  .anverso{
+    background:linear-gradient(180deg,#fff 0%,#f5ecd4 100%);
+    transform:rotateY(180deg);
+    color:var(--negro-carta);
+    display:grid;
+    grid-template-rows:auto 1fr auto;
+    padding:14px 16px;
+  }
+  .anverso.red{color:var(--rojo-carta)}
+  .esquina{
+    display:flex;flex-direction:column;align-items:center;
+    font-family:'Playfair Display',serif;
+    line-height:1;
+  }
+  .esquina .v{font-size:28px;font-weight:700}
+  .esquina .s{font-size:22px;margin-top:2px}
+  .esquina.bl{justify-self:start}
+  .esquina.tr{justify-self:end;transform:rotate(180deg)}
+  .anverso .centro{
+    display:flex;align-items:center;justify-content:center;
+    font-size:clamp(70px,18vw,120px);
+    font-family:'Playfair Display',serif;
+  }
+
+  .rev-nombre{
+    font-family:'Playfair Display',serif;
+    font-size:22px;
+    color:var(--crema);
+    letter-spacing:.06em;
+    text-align:center;
+    min-height:32px;
+  }
+  .rev-nombre .caret{
+    display:inline-block;width:2px;height:1em;
+    background:var(--dorado);
+    margin-left:2px;vertical-align:-4px;
+    animation:caret 1s steps(2) infinite;
+  }
+  @keyframes caret{50%{opacity:0}}
+
+  .btn-volver{
+    font-family:'Inter',sans-serif;
+    font-size:11px;letter-spacing:.35em;text-transform:uppercase;
+    color:var(--crema);opacity:.5;
+    padding:14px 24px;
+    background:transparent;border:none;cursor:pointer;
+  }
+
+  /* Capa invisible de toques (cubre toda la pantalla) */
+  .touch-layer{
+    position:absolute;inset:0;
+    z-index:10;
+    touch-action:none;
+  }
+  /* La capa de barra solo reacciona en la franja central; el swipe-down
+     se captura en la franja superior. Ambas sin feedback visual. */
+</style>
+</head>
+<body>
+<main>
+
+  <!-- =================== INICIO =================== -->
+  <section id="screen-inicio" class="screen active">
+    <div class="ornamento-top">· A R C A N A ·</div>
+    <div class="titulo-wrap">
+      <h1 id="titulo">El Oráculo</h1>
+      <div class="subtitulo">Piensa una carta. Pronúnciala en voz alta.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:18px">
+      <div class="palos">
+        <span>♠</span><span class="r">♥</span><span class="r">♦</span><span>♣</span>
+      </div>
+      <div class="hint">toca la pantalla cuando estés listo</div>
+    </div>
+
+    <!-- Guías de aim (centro de cada cuadrante) -->
+    <div class="aim" style="left:25%;top:25%"></div>
+    <div class="aim" style="left:75%;top:25%"></div>
+    <div class="aim" style="left:25%;top:75%"></div>
+    <div class="aim" style="left:75%;top:75%"></div>
+
+    <!-- Overlay ensayo -->
+    <div class="rehearsal-overlay">
+      <div class="rh-zone rh-quad" style="left:0;top:0">♠ picas</div>
+      <div class="rh-zone rh-quad" style="left:50%;top:0">♥ corazones</div>
+      <div class="rh-zone rh-quad" style="left:0;top:50%">♦ diamantes</div>
+      <div class="rh-zone rh-quad" style="left:50%;top:50%">♣ tréboles</div>
+    </div>
+
+    <div class="touch-layer" id="touch-inicio"></div>
+  </section>
+
+  <!-- =================== BARRA =================== -->
+  <section id="screen-barra" class="screen">
+    <div class="barra-titulo">Canalizando</div>
+    <div class="barra-sub">las energías del naipe</div>
+    <div class="progreso"></div>
+    <div class="barra-hint">deslizar arriba → abajo para cancelar</div>
+
+    <!-- Guías de aim en los 13 centros de la barra -->
+    <div id="aim-barra"></div>
+
+    <!-- Overlay ensayo (13 zonas) -->
+    <div class="rh-barra" id="rh-barra"></div>
+
+    <div class="touch-layer" id="touch-barra"></div>
+  </section>
+
+  <!-- =================== MEDITACIÓN =================== -->
+  <section id="screen-meditacion" class="screen">
+    <div class="med-wrap">
+      <div class="orbita"></div>
+      <div class="orbita b"></div>
+      <div class="orbita c"></div>
+      <div class="particulas" id="particulas"></div>
+      <div class="sigilo">✦</div>
+    </div>
+    <div class="med-texto">consultando los arcanos…</div>
+  </section>
+
+  <!-- =================== REVELACIÓN =================== -->
+  <section id="screen-revelacion" class="screen">
+    <div class="rev-top">· el oráculo ha hablado ·</div>
+    <div class="carta-escena">
+      <div class="carta">
+        <div class="cara dorso"></div>
+        <div class="cara anverso" id="anverso">
+          <div class="esquina bl"><div class="v" id="vbl">A</div><div class="s" id="sbl">♠</div></div>
+          <div class="centro" id="centroPalo">♠</div>
+          <div class="esquina tr"><div class="v" id="vtr">A</div><div class="s" id="str">♠</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="rev-nombre"><span id="nombre"></span><span class="caret" id="caret"></span></div>
+    <button class="btn-volver" id="volver">tocar para volver</button>
+  </section>
+
+</main>
+
+<script>
+  // ─── MAPEO DE PALOS (Toque 1, pantalla INICIO) ──────────────
+  // Cuadrantes de la pantalla según coordenadas del touch:
+  //   x < width/2, y < height/2  → 0 = ♠ picas     (arriba-izq)
+  //   x ≥ width/2, y < height/2  → 1 = ♥ corazones (arriba-der)
+  //   x < width/2, y ≥ height/2  → 2 = ♦ diamantes (abajo-izq)
+  //   x ≥ width/2, y ≥ height/2  → 3 = ♣ tréboles  (abajo-der)
+  //
+  // ─── MAPEO DE VALORES (Toque 2, pantalla BARRA) ─────────────
+  // La barra ocupa todo el ancho del viewport. Se divide en 13 zonas
+  // iguales horizontalmente:
+  //   zona n (0..12) ⇔ rank n ⇔ A,2,3,4,5,6,7,8,9,10,J,Q,K
+  //   rank = clamp(0..12, floor(touchX / (width/13)))
+  //
+  // Si cambias el convenio, modifica SUIT_MAP / RANK_NAMES aquí abajo.
+  const SUIT_MAP    = ['♠','♥','♦','♣'];
+  const SUIT_NAMES  = ['picas','corazones','diamantes','tréboles'];
+  const SUIT_IS_RED = [false, true, true, false];
+  const RANK_NAMES  = ['As','Dos','Tres','Cuatro','Cinco','Seis','Siete','Ocho','Nueve','Diez','Jota','Reina','Rey'];
+  const RANK_SHORT  = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+  // Género gramatical del palo para "X de Y" (todos femeninos en esta convención,
+  // así que no hace falta variar artículos).
+
+  const state = { screen:'inicio', suit:null, rank:null, rehearsal:false };
+
+  const screens = {
+    inicio:      document.getElementById('screen-inicio'),
+    barra:       document.getElementById('screen-barra'),
+    meditacion:  document.getElementById('screen-meditacion'),
+    revelacion:  document.getElementById('screen-revelacion'),
+  };
+
+  function show(name){
+    for (const k in screens) screens[k].classList.toggle('active', k===name);
+    state.screen = name;
+  }
+
+  function vibrar(pat){
+    if (navigator.vibrate) { try { navigator.vibrate(pat); } catch(_){} }
+  }
+
+  /* ---------- INICIO: toque de palo + long-press título ---------- */
+  const touchInicio = document.getElementById('touch-inicio');
+  const titulo = document.getElementById('titulo');
+
+  let lpTimer = null, lpFired = false;
+  const LP_MS = 3000;
+
+  function iniciarLongPress(x, y){
+    const r = titulo.getBoundingClientRect();
+    const sobreTitulo = x >= r.left-8 && x <= r.right+8 && y >= r.top-8 && y <= r.bottom+8;
+    if (!sobreTitulo) return;
+    lpFired = false;
+    lpTimer = setTimeout(() => {
+      lpFired = true;
+      state.rehearsal = !state.rehearsal;
+      document.body.classList.toggle('rehearsal', state.rehearsal);
+      vibrar([20,60,20]);
+    }, LP_MS);
+  }
+  function cancelarLongPress(){
+    if (lpTimer){ clearTimeout(lpTimer); lpTimer = null; }
+  }
+
+  touchInicio.addEventListener('pointerdown', (e) => {
+    if (state.screen !== 'inicio') return;
+    iniciarLongPress(e.clientX, e.clientY);
+  });
+  touchInicio.addEventListener('pointermove', (e) => {
+    // si el dedo se mueve mucho, cancelar long-press para no interferir
+    if (lpTimer) cancelarLongPress();
+  });
+  touchInicio.addEventListener('pointerup', (e) => {
+    if (state.screen !== 'inicio') return;
+    cancelarLongPress();
+    if (lpFired) { lpFired = false; return; } // fue long-press, no cuenta como tap
+
+    const w = window.innerWidth, h = window.innerHeight;
+    const x = e.clientX, y = e.clientY;
+    const col = x < w/2 ? 0 : 1;        // 0=izq, 1=der
+    const row = y < h/2 ? 0 : 1;        // 0=arriba, 1=abajo
+    // Orden: AI=0 ♠, AD=1 ♥, BI=2 ♦, BD=3 ♣
+    const suit = row*2 + col;
+    state.suit = suit;
+    vibrar(15);
+    show('barra');
+  });
+  touchInicio.addEventListener('pointercancel', cancelarLongPress);
+  touchInicio.addEventListener('pointerleave', cancelarLongPress);
+
+  /* ---------- BARRA: swipe-down (cancelar) + tap de rango ---------- */
+  const touchBarra = document.getElementById('touch-barra');
+
+  // Construir guías de aim de la barra y el overlay de ensayo una sola vez
+  (function buildBarra(){
+    const aimHost = document.getElementById('aim-barra');
+    const rh = document.getElementById('rh-barra');
+    for (let i=0;i<13;i++){
+      const a = document.createElement('div');
+      a.className = 'aim';
+      a.style.left = ((i+0.5)*(100/13)) + '%';
+      a.style.top = '50%';
+      aimHost.appendChild(a);
+
+      const s = document.createElement('div');
+      s.className = 'rh-slot';
+      s.textContent = RANK_SHORT[i];
+      rh.appendChild(s);
+    }
+  })();
+
+  let downY = null, downX = null, cancelIntent = false;
+  touchBarra.addEventListener('pointerdown', (e) => {
+    if (state.screen !== 'barra') return;
+    downY = e.clientY; downX = e.clientX;
+    cancelIntent = (e.clientY < window.innerHeight * 0.20);
+  });
+  touchBarra.addEventListener('pointermove', (e) => {
+    if (state.screen !== 'barra' || downY==null) return;
+    if (cancelIntent && (e.clientY - downY) > 80){
+      // Swipe-down desde parte superior → cancelar
+      downY = null;
+      vibrar([10,40,10]);
+      state.suit = null;
+      show('inicio');
+    }
+  });
+  touchBarra.addEventListener('pointerup', (e) => {
+    if (state.screen !== 'barra') return;
+    const startedAtTop = cancelIntent;
+    downY = null; cancelIntent = false;
+    if (startedAtTop) return; // no contar taps iniciados en la franja de cancelar
+
+    const w = window.innerWidth;
+    const x = Math.max(0, Math.min(w-1, e.clientX));
+    const rank = Math.min(12, Math.floor(x / (w/13)));
+    state.rank = rank;
+    vibrar(30);
+    lanzarMeditacion();
+  });
+  touchBarra.addEventListener('pointercancel', () => { downY=null; cancelIntent=false; });
+
+  /* ---------- MEDITACIÓN: 2.5s fijos ---------- */
+  function lanzarMeditacion(){
+    show('meditacion');
+    // partículas (solo se crean la primera vez)
+    if (!document.getElementById('particulas').childElementCount){
+      const host = document.getElementById('particulas');
+      const N = 14;
+      for (let i=0;i<N;i++){
+        const p = document.createElement('span');
+        p.className = 'particula';
+        const ang = (i/N)*Math.PI*2;
+        const r = 70 + (i%3)*18;
+        p.style.transform = `translate(${Math.cos(ang)*r}px, ${Math.sin(ang)*r}px)`;
+        p.style.animationDelay = (i*0.15)+'s';
+        host.appendChild(p);
+      }
+    }
+    setTimeout(revelar, 2500);
+  }
+
+  /* ---------- REVELACIÓN ---------- */
+  const anverso  = document.getElementById('anverso');
+  const vbl = document.getElementById('vbl');
+  const sbl = document.getElementById('sbl');
+  const vtr = document.getElementById('vtr');
+  const str = document.getElementById('str');
+  const centroPalo = document.getElementById('centroPalo');
+  const nombreEl   = document.getElementById('nombre');
+  const caretEl    = document.getElementById('caret');
+
+  function revelar(){
+    const s = state.suit, r = state.rank;
+    const simbolo = SUIT_MAP[s];
+    const red = SUIT_IS_RED[s];
+    anverso.classList.toggle('red', red);
+    vbl.textContent = RANK_SHORT[r];
+    vtr.textContent = RANK_SHORT[r];
+    sbl.textContent = simbolo;
+    str.textContent = simbolo;
+    centroPalo.textContent = simbolo;
+    nombreEl.textContent = '';
+    caretEl.style.display = 'inline-block';
+
+    show('revelacion');
+
+    // Typing del nombre sincronizado con el final del flip
+    const nombre = `${RANK_NAMES[r]} de ${SUIT_NAMES[s]}`;
+    setTimeout(() => typeText(nombre, 55), 900);
+  }
+
+  let typingTimer = null;
+  function typeText(txt, speed){
+    if (typingTimer) clearInterval(typingTimer);
+    let i = 0;
+    nombreEl.textContent = '';
+    typingTimer = setInterval(() => {
+      nombreEl.textContent = txt.slice(0, ++i);
+      if (i >= txt.length){
+        clearInterval(typingTimer); typingTimer = null;
+        setTimeout(() => { caretEl.style.display = 'none'; }, 600);
+      }
+    }, speed);
+  }
+
+  document.getElementById('volver').addEventListener('click', () => {
+    state.suit = null;
+    state.rank = null;
+    nombreEl.textContent = '';
+    caretEl.style.display = 'inline-block';
+    if (typingTimer){ clearInterval(typingTimer); typingTimer = null; }
+    show('inicio');
+  });
+
+  /* ---------- Service worker ---------- */
+  if ('serviceWorker' in navigator){
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    });
+  }
+
+  /* Evitar menú contextual por long-press */
+  window.addEventListener('contextmenu', (e) => e.preventDefault());
+</script>
+</body>
+</html>
