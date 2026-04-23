@@ -151,6 +151,8 @@
     font-family:'Inter',sans-serif;
     font-size:10px;letter-spacing:.35em;text-transform:uppercase;
     color:var(--dorado);opacity:.7;
+    padding:10px 24px;  /* zona de toque ampliada para el long-press oculto */
+    touch-action:none;
   }
   .pred-h2{
     display:inline-block;
@@ -636,7 +638,13 @@
   const GRID_K    = { x:[10,90], y:[72,90] };    // K: fila inferior ancha
   const RANK_GRID = [ [0,1,2,3], [4,5,6,7], [8,9,10,11] ];
 
-  const state = { screen:'prediccion', suit:null, rank:null, rehearsal:false };
+  // handoffMode: si está activo, la carta elegida en la pantalla de PREDICCIÓN
+  // es la que se revela al final (en vez de la codificada por palo+rango).
+  // Se activa/desactiva con long-press 1.5s sobre "· paso 1 · tu predicción ·".
+  // Feedback solo háptico (3 pulsos = ON, 1 pulso largo = OFF). Persiste
+  // hasta que el mago lo desactive manualmente.
+  const state = { screen:'prediccion', suit:null, rank:null, rehearsal:false,
+                  handoffMode:false, handoffCard:null };
 
   const screens = {
     prediccion:  document.getElementById('screen-prediccion'),
@@ -673,6 +681,8 @@
         const c = document.createElement('button');
         c.type = 'button';
         c.className = 'pred-card' + (SUIT_IS_RED[s] ? ' red' : '');
+        c.dataset.suit = s;
+        c.dataset.rank = r;
         c.innerHTML = `<span class="pc-r">${RANK_SHORT[r]}</span><span class="pc-s">${SUIT_MAP[s]}</span>`;
         c.addEventListener('click', onPredPick);
         row.appendChild(c);
@@ -685,6 +695,11 @@
   function onPredPick(e){
     if (state.screen !== 'prediccion') return;
     const card = e.currentTarget;
+    // Guardamos la carta seleccionada por si handoffMode está activo.
+    state.handoffCard = {
+      suit: parseInt(card.dataset.suit, 10),
+      rank: parseInt(card.dataset.rank, 10)
+    };
     card.classList.add('picked');
     vibrar(20);
     // pequeña pausa para mostrar el highlight, luego sellamos
@@ -702,7 +717,33 @@
     predSello.hidden = true;
     predGridHost.classList.remove('sealing');
     predGridHost.querySelectorAll('.pred-card.picked').forEach(c => c.classList.remove('picked'));
+    state.handoffCard = null;  // la carta seleccionada se olvida entre tricks
+                               // (state.handoffMode NO se toca — persiste hasta toggle manual)
   }
+
+  /* Toggle oculto de HANDOFF: long-press 1500ms sobre ".pred-kicker"
+     (la línea "· paso 1 · tu predicción ·"). Sin feedback visual.
+     Feedback háptico: 3 pulsos cortos = ON, 1 pulso largo = OFF. */
+  const predKicker = document.querySelector('.pred-kicker');
+  let handoffTimer = null;
+  const HANDOFF_LP_MS = 1500;
+
+  predKicker.addEventListener('pointerdown', (e) => {
+    if (state.screen !== 'prediccion') return;
+    if (handoffTimer) clearTimeout(handoffTimer);
+    handoffTimer = setTimeout(() => {
+      state.handoffMode = !state.handoffMode;
+      vibrar(state.handoffMode ? [25,50,25,50,25] : [120]);
+      handoffTimer = null;
+    }, HANDOFF_LP_MS);
+  });
+  const cancelHandoffTimer = () => {
+    if (handoffTimer) { clearTimeout(handoffTimer); handoffTimer = null; }
+  };
+  predKicker.addEventListener('pointerup', cancelHandoffTimer);
+  predKicker.addEventListener('pointercancel', cancelHandoffTimer);
+  predKicker.addEventListener('pointerleave', cancelHandoffTimer);
+  predKicker.addEventListener('pointermove', cancelHandoffTimer);
 
   /* ---------- INICIO: toque de palo + long-press título ---------- */
   const touchInicio = document.getElementById('touch-inicio');
@@ -877,7 +918,11 @@
   const caretEl    = document.getElementById('caret');
 
   function revelar(){
-    const s = state.suit, r = state.rank;
+    // En handoff mode: revelamos la carta que el espectador eligió en la
+    // pantalla de predicción (ignorando palo/rango codificados, que son random
+    // porque el espectador tocó sin saber el mapeo).
+    const s = (state.handoffMode && state.handoffCard) ? state.handoffCard.suit : state.suit;
+    const r = (state.handoffMode && state.handoffCard) ? state.handoffCard.rank : state.rank;
     const simbolo = SUIT_MAP[s];
     const red = SUIT_IS_RED[s];
     anverso.classList.toggle('red', red);
