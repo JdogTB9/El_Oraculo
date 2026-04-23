@@ -1,4 +1,4 @@
-const CACHE = 'oraculo-v1';
+const CACHE = 'oraculo-v2';
 const ASSETS = [
   './',
   './index.html',
