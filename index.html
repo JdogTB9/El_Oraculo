@@ -151,8 +151,12 @@
     font-family:'Inter',sans-serif;
     font-size:10px;letter-spacing:.35em;text-transform:uppercase;
     color:var(--dorado);opacity:.7;
-    padding:10px 24px;  /* zona de toque ampliada para el long-press oculto */
-    touch-action:none;
+  }
+  /* Zona de toque del toggle oculto de HANDOFF (doble-tap en "carta").
+     Sin estilo visible extra: se integra en el h2. */
+  #carta-toggle{
+    cursor:pointer;
+    touch-action:manipulation;
   }
   .pred-h2{
     display:inline-block;
@@ -504,8 +508,8 @@
   <!-- =================== PREDICCIÓN (teatro, 1ª pantalla) =================== -->
   <section id="screen-prediccion" class="screen active">
     <div class="pred-head">
-      <div class="pred-kicker">· paso 1 · tu predicción ·</div>
-      <h2 class="pred-h2">Sella una carta</h2>
+      <div class="pred-kicker">· paso 1 · tu <span id="pred-word">predicción</span> ·</div>
+      <h2 class="pred-h2">Sella una <span id="carta-toggle">carta</span></h2>
       <div class="pred-sub">Elige mentalmente una y tócala. El oráculo la guardará hasta el final.</div>
     </div>
     <div class="pred-grid" id="pred-grid"></div>
@@ -541,10 +545,10 @@
 
     <!-- Overlay ensayo -->
     <div class="rehearsal-overlay">
-      <div class="rh-zone rh-quad" style="left:0;top:0">♠ picas</div>
-      <div class="rh-zone rh-quad" style="left:50%;top:0">♥ corazones</div>
-      <div class="rh-zone rh-quad" style="left:0;top:50%">♦ diamantes</div>
-      <div class="rh-zone rh-quad" style="left:50%;top:50%">♣ tréboles</div>
+      <div class="rh-zone rh-quad" style="left:0;top:0">♥ corazones</div>
+      <div class="rh-zone rh-quad" style="left:50%;top:0">♦ diamantes</div>
+      <div class="rh-zone rh-quad" style="left:0;top:50%">♣ tréboles</div>
+      <div class="rh-zone rh-quad" style="left:50%;top:50%">♠ picas</div>
     </div>
 
     <div class="touch-layer" id="touch-inicio"></div>
@@ -606,10 +610,10 @@
 <script>
   // ─── MAPEO DE PALOS (Toque 1, pantalla INICIO) ──────────────
   // Cuadrantes de la pantalla según coordenadas del touch:
-  //   x < width/2, y < height/2  → 0 = ♠ picas     (arriba-izq)
-  //   x ≥ width/2, y < height/2  → 1 = ♥ corazones (arriba-der)
-  //   x < width/2, y ≥ height/2  → 2 = ♦ diamantes (abajo-izq)
-  //   x ≥ width/2, y ≥ height/2  → 3 = ♣ tréboles  (abajo-der)
+  //   x < width/2, y < height/2  → 0 = ♥ corazones (arriba-izq)
+  //   x ≥ width/2, y < height/2  → 1 = ♦ diamantes (arriba-der)
+  //   x < width/2, y ≥ height/2  → 2 = ♣ tréboles  (abajo-izq)
+  //   x ≥ width/2, y ≥ height/2  → 3 = ♠ picas     (abajo-der)
   //
   // ─── MAPEO DE VALORES (Toque 2, pantalla VALOR) ─────────────
   // Cuadrícula 4×4 invisible en la zona central de la pantalla.
@@ -626,9 +630,9 @@
   // Cancelar palo: swipe-down desde la franja superior (y < 20%).
   //
   // Si cambias el convenio, modifica SUIT_MAP / RANK_NAMES y GRID_* aquí abajo.
-  const SUIT_MAP    = ['♠','♥','♦','♣'];
-  const SUIT_NAMES  = ['picas','corazones','diamantes','tréboles'];
-  const SUIT_IS_RED = [false, true, true, false];
+  const SUIT_MAP    = ['♥','♦','♣','♠'];
+  const SUIT_NAMES  = ['corazones','diamantes','tréboles','picas'];
+  const SUIT_IS_RED = [true, true, false, false];
   const RANK_NAMES  = ['As','Dos','Tres','Cuatro','Cinco','Seis','Siete','Ocho','Nueve','Diez','Jota','Reina','Rey'];
   const RANK_SHORT  = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 
@@ -721,29 +725,27 @@
                                // (state.handoffMode NO se toca — persiste hasta toggle manual)
   }
 
-  /* Toggle oculto de HANDOFF: long-press 1500ms sobre ".pred-kicker"
-     (la línea "· paso 1 · tu predicción ·"). Sin feedback visual.
-     Feedback háptico: 3 pulsos cortos = ON, 1 pulso largo = OFF. */
-  const predKicker = document.querySelector('.pred-kicker');
-  let handoffTimer = null;
-  const HANDOFF_LP_MS = 1500;
+  /* Toggle oculto de HANDOFF: doble-tap sobre la palabra "carta" en
+     "Sella una carta". Feedback háptico: 3 pulsos cortos = ON, 1 pulso largo = OFF.
+     Feedback visual sutil (solo para el mago): cuando HANDOFF está ON,
+     en el kicker aparece "prediccion" (sin tilde); cuando está OFF, "predicción". */
+  const cartaToggle = document.getElementById('carta-toggle');
+  const predWord    = document.getElementById('pred-word');
+  let lastCartaTap = 0;
+  const DBL_TAP_MS = 400;
 
-  predKicker.addEventListener('pointerdown', (e) => {
+  cartaToggle.addEventListener('pointerup', (e) => {
     if (state.screen !== 'prediccion') return;
-    if (handoffTimer) clearTimeout(handoffTimer);
-    handoffTimer = setTimeout(() => {
+    const now = Date.now();
+    if (now - lastCartaTap < DBL_TAP_MS){
       state.handoffMode = !state.handoffMode;
+      predWord.textContent = state.handoffMode ? 'prediccion' : 'predicción';
       vibrar(state.handoffMode ? [25,50,25,50,25] : [120]);
-      handoffTimer = null;
-    }, HANDOFF_LP_MS);
+      lastCartaTap = 0;
+    } else {
+      lastCartaTap = now;
+    }
   });
-  const cancelHandoffTimer = () => {
-    if (handoffTimer) { clearTimeout(handoffTimer); handoffTimer = null; }
-  };
-  predKicker.addEventListener('pointerup', cancelHandoffTimer);
-  predKicker.addEventListener('pointercancel', cancelHandoffTimer);
-  predKicker.addEventListener('pointerleave', cancelHandoffTimer);
-  predKicker.addEventListener('pointermove', cancelHandoffTimer);
 
   /* ---------- INICIO: toque de palo + long-press título ---------- */
   const touchInicio = document.getElementById('touch-inicio');
