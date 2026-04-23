@@ -508,7 +508,7 @@
   <!-- =================== PREDICCIÓN (teatro, 1ª pantalla) =================== -->
   <section id="screen-prediccion" class="screen active">
     <div class="pred-head">
-      <div class="pred-kicker">· paso 1 · tu <span id="pred-word">predicción</span> ·</div>
+      <div class="pred-kicker">· paso 1 · tu <span id="pred-word">prediccion</span> ·</div>
       <h2 class="pred-h2">Sella una <span id="carta-toggle">carta</span></h2>
       <div class="pred-sub">Elige mentalmente una y tócala. El oráculo la guardará hasta el final.</div>
     </div>
@@ -644,11 +644,13 @@
 
   // handoffMode: si está activo, la carta elegida en la pantalla de PREDICCIÓN
   // es la que se revela al final (en vez de la codificada por palo+rango).
-  // Se activa/desactiva con long-press 1.5s sobre "· paso 1 · tu predicción ·".
+  // Se activa/desactiva con doble-tap sobre la palabra "carta" en "Sella una carta".
+  // Por defecto arranca en ON para poder pasar el móvil directamente al espectador
+  // tras abrir la app. Si el mago va a hacer el truco él mismo, debe desactivarlo.
   // Feedback solo háptico (3 pulsos = ON, 1 pulso largo = OFF). Persiste
   // hasta que el mago lo desactive manualmente.
   const state = { screen:'prediccion', suit:null, rank:null, rehearsal:false,
-                  handoffMode:false, handoffCard:null };
+                  handoffMode:true, handoffCard:null };
 
   const screens = {
     prediccion:  document.getElementById('screen-prediccion'),
